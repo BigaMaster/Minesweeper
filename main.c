@@ -21,7 +21,7 @@ void printResult(int end);
 
 int main ()
 {
-	int bombs = 10, end = 0, row, column;
+	int bombs = 5, end = 0, row, column;
 	/*Two matrixes, one with whether the "content" of the position may be showed or not and the other
 	with the bombs and the amount of bombs around a certain position*/
 	int board[2][HEIGHT][WIDTH];
