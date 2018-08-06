@@ -2,14 +2,21 @@
 /*Computer engineering student at UTFPR - Brazil*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define HEIGHT 10
 #define WIDTH 10
 
-#define BOMB -1
 
 #define DATA 0
 #define STATUS 1
+
+#define SHOWING_SLOT 1
+#define NOT_SHOWING_SLOT 0
+
+#define BOMB -1
+#define NO_BOMB 0
+
 
 int time ();
 void fillBoard (int board[2][HEIGHT][WIDTH], int bombs);
@@ -17,6 +24,7 @@ void printBoard (int board[2][HEIGHT][WIDTH]);
 void revealBombs (int board[2][HEIGHT][WIDTH]);
 int guessPosition (int board[2][HEIGHT][WIDTH]);
 void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess);
+bool isAdjacentZeroWithinBoundaries(int board[2][HEIGHT][WIDTH], int row, int column);
 void printResult(int end);
 
 int main ()
@@ -53,10 +61,10 @@ void fillBoard (int board[2][HEIGHT][WIDTH], int bombs)
 		{
 			/*Nothing currently on that position*/
 			/*Initializing position at board*/
-			board[DATA][row][column] = 0;
+			board[DATA][row][column] = NO_BOMB;
 
 			/*Not showed untill guessed*/
-			board[STATUS][row][column] = 0;
+			board[STATUS][row][column] = NOT_SHOWING_SLOT;
 		}
 	}
 
@@ -96,17 +104,17 @@ void printBoard (int board[2][HEIGHT][WIDTH])
 		for (column = 0; column < WIDTH; column++)
 		{
 			/*Position not guessed*/
-			if (!board[STATUS][row][column])
+			if (board[STATUS][row][column] == NOT_SHOWING_SLOT)
 				printf (" - |");
 
 			/*Guessed positions*/
 			else
 			{
 				/*Show how many bombs are around*/
-				if (board[DATA][row][column] > 0)
+				if (board[DATA][row][column] > NO_BOMB)
 					printf (" %d |", board[DATA][row][column]);
 				/*No bombs around. Print a blank space*/
-				else if (board[DATA][row][column] == 0)
+				else if (board[DATA][row][column] == NO_BOMB)
 					printf ("   |");
 				/*Guessed a bomb. Lost the game. Prints all bombs*/
 				else
@@ -127,14 +135,15 @@ int guessPosition (int board[2][HEIGHT][WIDTH])
 {
 	int end = 0, x_guess, y_guess;
 
-	printf ("Please guess a position: ");
+	printf ("Please guess a position(x,y): ");
 	scanf ("%d,%d", &x_guess, &y_guess);
 
 	/*Makes positions be from 1 to LIMIT instead of 0 to LIMIT -1*/
 	y_guess--;
 	x_guess--;
 
-	/*Found a bomb*//*GAME OVER*/
+	/*Found a bomb*/
+	/*GAME OVER*/
 	//Made by Matheus Bigarelli
 	if (board[DATA][y_guess][x_guess] == BOMB)
 	{
@@ -150,7 +159,6 @@ int guessPosition (int board[2][HEIGHT][WIDTH])
 }
 
 
-/*Reveals all bombs*/
 /*Executed only if the player lost the game*/
 void revealBombs (int board[2][HEIGHT][WIDTH])
 {
@@ -159,7 +167,7 @@ void revealBombs (int board[2][HEIGHT][WIDTH])
 	for (row = 0; row < HEIGHT; row++)
 		for (column = 0; column < WIDTH; column++)
 			if (board[DATA][row][column] == BOMB)
-				board[STATUS][row][column] = 1;
+				board[STATUS][row][column] = SHOWING_SLOT;
 }
 
 
@@ -169,14 +177,22 @@ void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess)
 	int row, column;
 
 	/*Reveals the particular position guessed*/
-	board[STATUS][y_guess][x_guess] = 1;
+	board[STATUS][y_guess][x_guess] = SHOWING_SLOT;
 
-	if (board[DATA][y_guess][x_guess] == 0)
+
+	if (board[DATA][y_guess][x_guess] == NO_BOMB)
 		for (row = -1 + y_guess; row < 2 + y_guess; row++)
 			for (column = -1 + x_guess; column < 2 + x_guess; column++)
-				if (0 <= row && row < HEIGHT && 0 <= column && column < WIDTH)
-					if (board[DATA][row][column] == 0 && board[STATUS][row][column] == 0)
-						revealPosition (board, column, row);
+				if (isAdjacentZeroWithinBoundaries(board, row, column))
+					revealPosition (board, column, row);
+}
+
+bool isAdjacentZeroWithinBoundaries(int board[2][HEIGHT][WIDTH], int row, int column)
+{
+	if (0 <= row && row < HEIGHT && 0 <= column && column < WIDTH)
+		if (board[DATA][row][column] == NO_BOMB && board[STATUS][row][column] == NOT_SHOWING_SLOT)
+			return true;
+	return false;
 }
 
 void printResult(int end)
