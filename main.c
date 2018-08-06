@@ -17,14 +17,21 @@
 #define BOMB -1
 #define NO_BOMB 0
 
+typedef struct
+{
+	int x;
+	int y;
+} Point;
+
 
 int time ();
 void fillBoard (int board[2][HEIGHT][WIDTH], int bombs);
 void printBoard (int board[2][HEIGHT][WIDTH]);
 void revealBombs (int board[2][HEIGHT][WIDTH]);
 int guessPosition (int board[2][HEIGHT][WIDTH]);
-void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess);
+void revealPosition (int board[2][HEIGHT][WIDTH], Point guessedPosition);
 bool isAdjacentZeroWithinBoundaries(int board[2][HEIGHT][WIDTH], int row, int column);
+Point createNewPoint(int x, int y);
 void printResult(int end);
 
 int main ()
@@ -54,6 +61,8 @@ int main ()
 
 void fillBoard (int board[2][HEIGHT][WIDTH], int bombs)
 {
+	Point point, adjacentPoint;
+
 	int row, row_around, column, column_around;
 
 	for (row = 0; row < HEIGHT; row++) {
@@ -133,19 +142,21 @@ void printBoard (int board[2][HEIGHT][WIDTH])
 
 int guessPosition (int board[2][HEIGHT][WIDTH])
 {
-	int end = 0, x_guess, y_guess;
+	int end = 0;
 
-	printf ("Please guess a position(x,y): ");
-	scanf ("%d,%d", &x_guess, &y_guess);
+	Point guessedPosition;
+
+	printf ("Please guess a position (x,y): ");
+	scanf ("%d,%d", &guessedPosition.x, &guessedPosition.y);
 
 	/*Makes positions be from 1 to LIMIT instead of 0 to LIMIT -1*/
-	y_guess--;
-	x_guess--;
+	guessedPosition.y--;
+	guessedPosition.x--;
 
 	/*Found a bomb*/
 	/*GAME OVER*/
 	//Made by Matheus Bigarelli
-	if (board[DATA][y_guess][x_guess] == BOMB)
+	if (board[DATA][guessedPosition.y][guessedPosition.x] == BOMB)
 	{
 		revealBombs (board);
 		end = 1;
@@ -153,7 +164,7 @@ int guessPosition (int board[2][HEIGHT][WIDTH])
 
 	/*Found nothing*/
 	else
-		revealPosition (board, x_guess, y_guess);
+		revealPosition (board, guessedPosition);
 
 	return end;
 }
@@ -172,19 +183,22 @@ void revealBombs (int board[2][HEIGHT][WIDTH])
 
 
 
-void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess)
+void revealPosition (int board[2][HEIGHT][WIDTH], Point guessedPosition)
 {
 	int row, column;
 
 	/*Reveals the particular position guessed*/
-	board[STATUS][y_guess][x_guess] = SHOWING_SLOT;
+	board[STATUS][guessedPosition.y][guessedPosition.x] = SHOWING_SLOT;
 
 
-	if (board[DATA][y_guess][x_guess] == NO_BOMB)
-		for (row = -1 + y_guess; row < 2 + y_guess; row++)
-			for (column = -1 + x_guess; column < 2 + x_guess; column++)
+	if (board[DATA][guessedPosition.y][guessedPosition.x] == NO_BOMB)
+		for (row = -1 + guessedPosition.y; row < 2 + guessedPosition.y; row++)
+			for (column = -1 + guessedPosition.x; column < 2 + guessedPosition.x; column++)
 				if (isAdjacentZeroWithinBoundaries(board, row, column))
-					revealPosition (board, column, row);
+				{
+					Point newRevealedPosition = createNewPoint(column, row);
+					revealPosition (board, newRevealedPosition);
+				}
 }
 
 bool isAdjacentZeroWithinBoundaries(int board[2][HEIGHT][WIDTH], int row, int column)
@@ -193,6 +207,14 @@ bool isAdjacentZeroWithinBoundaries(int board[2][HEIGHT][WIDTH], int row, int co
 		if (board[DATA][row][column] == NO_BOMB && board[STATUS][row][column] == NOT_SHOWING_SLOT)
 			return true;
 	return false;
+}
+
+Point createNewPoint(int x, int y)
+{
+	Point newPoint;
+	newPoint.x = x;
+	newPoint.y = y;
+	return newPoint;
 }
 
 void printResult(int end)
