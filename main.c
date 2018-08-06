@@ -17,7 +17,7 @@ void printBoard (int board[2][HEIGHT][WIDTH]);
 void revealBombs (int board[2][HEIGHT][WIDTH]);
 int guessPosition (int board[2][HEIGHT][WIDTH]);
 void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess);
-
+void printResult(int end);
 
 int main ()
 {
@@ -38,10 +38,7 @@ int main ()
 
 	printBoard (board);
 
-	if (!end)
-		printf ("Congratulations!! You win!! :D\n\n");
-	else
-		printf ("Sorry, you lose! :(\n\n");
+	printResult(end);
 
 	return 0;
 }
@@ -180,6 +177,15 @@ void revealPosition (int board[2][HEIGHT][WIDTH], int x_guess, int y_guess)
 				if (0 <= row && row < HEIGHT && 0 <= column && column < WIDTH)
 					if (board[DATA][row][column] == 0 && board[STATUS][row][column] == 0)
 						revealPosition (board, column, row);
+}
+
+void printResult(int end)
+{
+	if (!end)
+		printf ("Congratulations!! You win!! :D\n\n");
+	else
+		printf ("Sorry, you lose! :(\n\n");
+
 }
 
 //Made by Matheus Bigarelli
